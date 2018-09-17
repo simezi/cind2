@@ -1,0 +1,8 @@
+{
+  "name": "cind",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:simezi/cind2.git",
+  "author": "matzz <matsubaray@eac.ne.jp>",
+  "license": "MIT"
+}
