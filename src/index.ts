@@ -1,10 +1,7 @@
-import sequelize from 'sequelize';
-import puppeteer from 'puppeteer';
-import { error } from 'util';
+import { Sequelize } from 'sequelize-typescript';
+import * as puppeteer from 'puppeteer';
+import { Comic } from './models/Comic';
 
-interface NodeSelector {
-
-}
 
 async function doCrawl() {
   const browser = await puppeteer.launch();
@@ -16,12 +13,14 @@ async function doCrawl() {
     return [...daily].map((elem) => {
       // 漫画情報の取得
       const items = elem.querySelectorAll('.daily-series-item');
-      const itemsInfo = [...items].map((item => ({
-
-        title: item.querySelector<HTMLElement>('.daily-series-title')!.innerText,
-        subtitle: item.querySelector<HTMLElement>('.daily-series-tagline')!.innerText,
-        url: item.querySelector<HTMLAnchorElement>('a')!.href
-      })));
+      const itemsInfo = [...items].map((item) => {
+        const ret = {
+          title: item.querySelector<HTMLElement>('.daily-series-title')!.innerText,
+          explanation: item.querySelector<HTMLElement>('.daily-series-tagline')!.innerText,
+          url: item.querySelector<HTMLAnchorElement>('a')!.href
+        };
+        return ret;
+      });
       // 日付情報の取得
       const month = elem.querySelector<HTMLElement>('.month')!.innerText;
       const day = elem.querySelector<HTMLElement>('.day')!.innerText;
@@ -35,30 +34,38 @@ async function doCrawl() {
       };
     });
   });
-  console.dir(scrapingData, { depth: 5 });
+
   await browser.close();
+  return scrapingData;
 }
 
-// doCrawl()
-
-const seq = new sequelize('database_development', 'root', 'password', {
+const seq = new Sequelize({
+  database: 'comicdb',
+  username: 'root',
+  password: 'password',
   host: 'localhost',
   dialect: 'mysql',
   operatorsAliases: false,
   pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  }
+  //   max: 5,
+  //   min: 0,
+  //   acquire: 0,
+  //   idle: 1000
+  },
+  modelPaths: [`${__dirname}/models/*.js`]
 });
 
-// @ts-ignore
-seq
-  .authenticate()
-  .then(() => {
-    console.log('connected');
-  })
-  .catch((e) => {
-    console.log('failure');
-  });
+doCrawl().then((data) => {
+  return data
+    .map((val: any) => val.itemsInfo)
+    .map((items: any[]) => {
+      return items.map((item) => new Comic(item));
+    })
+    .reduce((seed: any, next: any) => seed.concat(next), []);
+}).then((items) => {
+  return Promise.all(items.map((item:Comic) => item.save()));
+}).catch((e) => {
+  console.log(e);
+}).then(() => {
+  return seq.close();
+})
