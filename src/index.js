@@ -1,3 +1,5 @@
+const Sequilize = require('sequelize');
+
 const puppeteer = require('puppeteer');
 
 (async () => {
@@ -10,13 +12,11 @@ const puppeteer = require('puppeteer');
     return [...daily].map(elem => {
       // 漫画情報の取得
       const items = elem.querySelectorAll('.daily-series-item');
-      const itemsInfo = [...items].map(item => {
-        return {
-          title: item.querySelector('.daily-series-title').innerText,
-          subtitle: item.querySelector('.daily-series-tagline').innerText,
-          url: item.querySelector('a').href
-        };
-      });
+      const itemsInfo = [...items].map(item => ({
+        title: item.querySelector('.daily-series-title').innerText,
+        subtitle: item.querySelector('.daily-series-tagline').innerText,
+        url: item.querySelector('a').href
+      }));
       // 日付情報の取得
       const month = elem.querySelector('.month').innerText;
       const day = elem.querySelector('.day').innerText;
@@ -33,3 +33,22 @@ const puppeteer = require('puppeteer');
   console.dir(scrapingData, { depth: 5 });
   await browser.close();
 })();
+
+// const sequilize = new Sequilize('cind', 'root', 'password', {
+//   host: 'localhost',
+//   dialect: 'mysql',
+//   operatorsAliases: false,
+//   pool: {
+//     max: 5,
+//     min: 0,
+//     acquire: 30000,
+//     idle: 10000
+//   }
+// });
+//
+// sequilize
+//   .authenticate()
+//   .then(() => {
+//     console.log('connected');
+//   })
+//   .catch(console.log('failure'))

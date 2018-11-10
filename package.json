@@ -15,7 +15,14 @@
     "eslint-plugin-react": "^7.11.0",
     "prettier": "^1.14.2"
   },
+  "scripts": {
+    "start": "node ./src/index.js"
+  },
   "dependencies": {
-    "puppeteer": "^1.8.0"
+    "global": "^4.3.2",
+    "mysql": "^2.16.0",
+    "mysql2": "^1.6.2",
+    "puppeteer": "^1.8.0",
+    "sequelize": "^4.41.0"
   }
 }
